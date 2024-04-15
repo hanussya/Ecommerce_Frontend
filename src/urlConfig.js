@@ -1,6 +1,6 @@
 
-const BASE_URL = import.meta.env.VITE_BASE_URL
-console.log("base url",import.meta.env.VITE_BASE_URL) // "123"
+const BASE_URL = 'https://ecommerce-backend-t7ic.onrender.com'
+// console.log("base url",import.meta.env.VITE_BASE_URL) // "123"
 // console.log(import.meta.env.DB_PASSWORD) // undefined
 const urlConfig = {
 LOGIN_URL: `${BASE_URL}/api/auth/login`,
