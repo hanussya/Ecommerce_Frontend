@@ -1,94 +1,107 @@
-import React,{useState} from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import './login.css'
-import axios from 'axios'
-import urlConfig from '../../urlConfig'
-import {useAuth} from "../../contexts/AuthProvider"
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import './login.css';
+import axios from 'axios';
+import urlConfig from '../../urlConfig';
+import { useAuth } from "../../contexts/AuthProvider";
 
 function Login() {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [errMsg, setErrMsg] = useState("");
-    const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errMsg, setErrMsg] = useState("");
+  const [loading, setLoading] = useState(false);
 
-    const {authenticatedUser, setAuthenticatedUser} = useAuth()
+  const { setAuthenticatedUser } = useAuth();
+  const navigate = useNavigate();
 
-    const navigate = useNavigate();
-    
-    const handleSubmit = async () => {
-        try{
-            setLoading(true)
-            const userDetails = {email, password}
-            const res = await axios.post(urlConfig.LOGIN_URL, userDetails, {withCredentials: true})
-            console.log("logged in user",res)
-            setAuthenticatedUser(res.data.user)
-            setLoading(false)
-            setEmail("")
-            setPassword("")
-            navigate("/")
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-        }catch(err){
-            setErrMsg(err.message)
-            console.log(err)
-            setLoading(false)
-            setTimeout(()=>{
-                setErrMsg("")
-            },2000)
-        }
+    try {
+      setLoading(true);
+      setErrMsg("");
+
+      const userDetails = { email, password };
+      const res = await axios.post(urlConfig.LOGIN_URL, userDetails, {
+        withCredentials: true
+      });
+
+      setAuthenticatedUser(res.data.user);
+      setEmail("");
+      setPassword("");
+      navigate("/");
+    } catch (err) {
+      setErrMsg(err?.response?.data?.message || "Login failed. Please try again.");
+      setTimeout(() => {
+        setErrMsg("");
+      }, 2500);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    if (loading) {
-        return <h1>Loading...</h1>;
-      }
-      return (
-        <div className="signinscreen">
-          <div className="container">
-            <div className="innerContainer">
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: "20px",
-                  // backgroundColor: 'red',
-                }}
-              >
-                <div style={{ cursor: "pointer" }} onClick={() => {}}>
-                  <i class="fas fa-arrow-circle-left fa-5x"></i>
-                </div>
-                <p>Sign In</p>
-              </div>
-     
-     
-              <label for="email">Email</label>
-              <input
-                type="email"
-                id="lname"
-                name="email"
-                placeholder="Your email.."
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-              <label for="password">Password</label>
-              <input
-                type="password"
-                id="lname"
-                name="password"
-                placeholder="Your Password.."
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-              <Link to="/signup" className="link">
-                <span>Create a new account ?</span>
-              </Link>
-              <br />
-              <input type="submit" value="Sign in" onClick={handleSubmit} />
-              <div className={errMsg ? "errContainer" : ""}>{errMsg}</div>
-            </div>
+  return (
+    <div className="auth_screen signin_screen">
+      <div className="auth_card">
+        <div className="auth_left">
+          <p className="auth_badge">Welcome back</p>
+          <h1>Sign in to continue shopping</h1>
+          <p className="auth_text">
+            Access your cart, manage your orders, and continue browsing your favorite products.
+          </p>
+          <div className="auth_feature_list">
+            <span>Secure sign in</span>
+            <span>Quick access to cart</span>
+            <span>Clean shopping experience</span>
           </div>
         </div>
-      );
-     
+
+        <div className="auth_right">
+          <div className="auth_header">
+            <h2>Sign In</h2>
+            <p>Enter your details to access your account</p>
+          </div>
+
+          <form className="auth_form" onSubmit={handleSubmit}>
+            <label htmlFor="login-email">Email</label>
+            <input
+              id="login-email"
+              type="email"
+              name="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+
+            <label htmlFor="login-password">Password</label>
+            <input
+              id="login-password"
+              type="password"
+              name="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+
+            {errMsg && <div className="errContainer">{errMsg}</div>}
+
+            <button type="submit" className="auth_btn" disabled={loading}>
+              {loading ? "Signing in..." : "Sign In"}
+            </button>
+          </form>
+
+          <p className="auth_footer_text">
+            Don't have an account?{" "}
+            <Link to="/signup" className="auth_link">
+              Create one
+            </Link>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
 }
 
-export default Login
+export default Login;

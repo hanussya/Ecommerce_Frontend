@@ -10,149 +10,115 @@ import { usePaginationContext } from '../contexts/PaginationContext';
 import axios from 'axios';
 import URL from '../urlConfig';
 
-
-
 function Home() {
-    // preserver -> pagination
-    /***single source of truth for all the products***/
     const [products, setProducts] = useState([]);
-    /************ all the categories -> a product**********/
     const [categories, setCategories] = useState([]);
-    /**********Action***********/
-    /*********************** state ->term with which you want to filter the product list*****************************/
     const [searchTerm, setSearchTerm] = useState("");
-    /**************************sort : 0 : unsorted , 1: incresing order , -1 : decreasing order ************************************/
     const [sortDir, setsortDir] = useState(0);
-    /**************************** currcategory : category group you result **********************************/
     const [currCategory, setCurrCategory] = useState("All categories");
-    // page num and page size
-    const { pageSize, pageNum,
-        setPageNum,
-        setPageSize } = usePaginationContext();
-       
-    /****************get all the products*********************/
-    useEffect(() => {
-        (async function () {
-            console.log("url",URL)
-            const productData = await axios(URL.GET_PRODUCTS);
-            
-            // const productData = await resp.json();
-            console.log("productData",productData.data.message)
-            setProducts(productData.data.message);
-        })()
-    }, [])
 
-    /**************getting all the categroies ********************/
+    const { pageSize, pageNum, setPageNum } = usePaginationContext();
+
     useEffect(() => {
         (async function () {
-            const categoriesData =await axios(URL.GET_CATEGORIES);
-            console.log("categoriesData",categoriesData.data.message)
-            // const  categoriesData= await resp.json();
-            setCategories(categoriesData.data.message);
-        })()
-    }, [])
-    const object = basicOps(products, searchTerm, sortDir, currCategory, pageNum, pageSize);
+            const productData = await axios(URL.GET_PRODUCTS);
+            setProducts(productData.data.message || []);
+        })();
+    }, []);
+
+    useEffect(() => {
+        (async function () {
+            const categoriesData = await axios(URL.GET_CATEGORIES);
+            setCategories(categoriesData.data.message || []);
+        })();
+    }, []);
+
+    const object = basicOps(products, searchTerm, sortDir, currCategory, pageNum, pageSize) || {
+        filteredSortedgroupByArr: [],
+        totalPages: 1
+    };
+
     const filteredSortedgroupByArr = object.filteredSortedgroupByArr;
-    const totalPages = object.totalPages;
+    const totalPages = object.totalPages || 1;
+
     return (
         <>
-            {/* header */}
             <header className="nav_wrapper">
                 <div className="search_sortWrapper">
                     <input
                         className='search_input'
                         type="text"
+                        placeholder="Search products..."
                         value={searchTerm}
                         onChange={(e) => {
-                            setSearchTerm(e.target.value)
+                            setSearchTerm(e.target.value);
                             setPageNum(1);
-                        }} />
+                        }}
+                    />
+
                     <div className="icons_container">
-                        <ArrowCircleUpIcon
-                            style={{ color: "white" }}
-                            fontSize="large"
+                        <div
+                            className="sort_btn"
                             onClick={() => {
-                                setsortDir(1)
-                                setPageNum(1)
+                                setsortDir(1);
+                                setPageNum(1);
                             }}
-                        ></ArrowCircleUpIcon>
-                        <ArrowCircleDownIcon
-                            fontSize="large"
-                            style={{ color: "white" }}
+                            title="Sort price low to high"
+                        >
+                            <ArrowCircleUpIcon style={{ color: "white" }} fontSize="large" />
+                        </div>
+
+                        <div
+                            className="sort_btn"
                             onClick={() => {
-                                setsortDir(-1)
-                                setPageNum(1)
+                                setsortDir(-1);
+                                setPageNum(1);
                             }}
-                        ></ArrowCircleDownIcon>
+                            title="Sort price high to low"
+                        >
+                            <ArrowCircleDownIcon style={{ color: "white" }} fontSize="large" />
+                        </div>
                     </div>
                 </div>
 
                 <div className="categories_wrapper">
-                    <Categories categories={categories}
+                    <Categories
+                        categories={categories}
                         setCurrCategory={setCurrCategory}
-                        
-                    ></Categories>
+                        currCategory={currCategory}
+                    />
                 </div>
-
             </header>
 
-            {/* main area  */}
             <main className="product_wrapper">
-                {/* products will be there */}
-                <ProductList productList={filteredSortedgroupByArr}> ̰</ProductList>
+                <ProductList productList={filteredSortedgroupByArr} />
             </main>
-            {/* pagination */}
+
             <div className="pagination">
                 <button
                     onClick={() => {
-                        if (pageNum == 1)
-                            return
-                        setPageNum((pageNum) => pageNum - 1)
+                        if (pageNum === 1) return;
+                        setPageNum((pageNum) => pageNum - 1);
                     }}
-
-                    disabled={pageNum == 1 ? true : false}
+                    disabled={pageNum === 1}
                 >
-                    <KeyboardArrowLeftIcon fontSize='large'></KeyboardArrowLeftIcon>
+                    <KeyboardArrowLeftIcon fontSize='large' />
                 </button>
-                <div className="pagenum">
-                    {pageNum}
-                </div>
+
+                <div className="pagenum">{pageNum}</div>
+
                 <button
                     onClick={() => {
-                        if (pageNum == totalPages)
-                            return
-                        setPageNum((pageNum) => pageNum + 1)
+                        if (pageNum === totalPages) return;
+                        setPageNum((pageNum) => pageNum + 1);
                     }}
-                    disabled={pageNum == totalPages ? true : false}
-
-
+                    disabled={pageNum === totalPages}
                 >
-                    <ChevronRightIcon fontSize='large'
-
-                    ></ChevronRightIcon>
+                    <ChevronRightIcon fontSize='large' />
                 </button>
             </div>
         </>
-
-    )
+    );
 }
 
 export default Home;
-
-
-/***
- * 1. Steps/ 
- *  - INtial Data 
- *  a. Searching
- *  b. Sorting
- *  c. Categorization
- *  d. Pagination
- *  e. Render the Results
- * 
- * 2. Data 
- *      1. Products
- *      2. Categories
- * 
- * 
- * **/
-
