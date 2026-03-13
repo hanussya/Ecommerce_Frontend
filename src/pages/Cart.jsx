@@ -7,7 +7,7 @@ function Cart() {
   const productList = useSelector((store) => store.cartReducer.cartProducts);
 
   const totalPrice = productList.reduce((sum, item) => {
-    return sum + (item.price * item.indQuantity);
+    return sum + Number(item.price) * item.indQuantity;
   }, 0);
 
   const totalItems = productList.reduce((sum, item) => {
@@ -36,13 +36,17 @@ function Cart() {
               </div>
               <div className="cart_total">Total: ${totalPrice.toFixed(2)}</div>
             </div>
+
+            <div style={{ marginTop: "1rem", display: "flex", justifyContent: "flex-end" }}>
+              <Link to="/checkout" className="primary_btn">
+                Proceed to Checkout
+              </Link>
+            </div>
           </>
         ) : (
           <div className="empty_state">
             <h2>Your cart is empty</h2>
-            <p>
-              Browse products and add something you like. Your selected products will appear here.
-            </p>
+            <p>Browse products and add something you like.</p>
             <Link to="/" className="primary_btn">Continue Shopping</Link>
           </div>
         )}
